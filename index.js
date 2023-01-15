@@ -22,15 +22,25 @@ const GOOGLE_TEXT_SERCH_URI =
   "https://maps.googleapis.com/maps/api/place/textsearch/json";
 const SERCH_QUERY = encodeURI("鳥取県鳥取市 キャンプ");
 
+let gglFetchDataCache;
+let gglFetchDataCacheFlag = false;
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "front/build")));
 
 async function getGoogleMapData() {
-  const gglFetchData = await axios.get(
-    `${GOOGLE_TEXT_SERCH_URI}?query=${SERCH_QUERY}&type=campground&language=ja&key=${GOOGLE_API_KEY}`
-  );
-  // console.log("Google Data", gglFetchData.data.results[0]);
-  return gglFetchData.data.results[0].name;
+  if (!gglFetchDataCacheFlag) {
+    const gglFetchData = await axios.get(
+      `${GOOGLE_TEXT_SERCH_URI}?query=${SERCH_QUERY}&type=campground&language=ja&key=${GOOGLE_API_KEY}`
+    );
+    gglFetchDataCacheFlag = true;
+    console.log("Google Data Fetch");
+    gglFetchDataCache = gglFetchData;
+    return gglFetchData.data.results[0].name;
+  } else {
+    console.log("Google Data Cache");
+    return gglFetchDataCache.data.results[0].name;
+  }
 }
 
 async function getRequest(prefCode) {
